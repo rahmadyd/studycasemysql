@@ -717,3 +717,33 @@ a:hover { text-decoration: underline; }
 .progress-step--pending {
   color: var(--color-muted);
 }
+
+
+/* Print styles for PDF Handout export */
+@media print {
+  .no-print, header.preview-header, footer {
+    display: none !important;
+  }
+  body, .preview-root, .preview-main, .preview-shell {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .preview-card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 20px !important;
+    background: #ffffff !important;
+  }
+  .code-block {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+  .table-header {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+  }
+}

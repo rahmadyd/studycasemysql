@@ -4,7 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GeneratorForm } from '@/components/generator-form';
 import { CaseResults } from '@/components/case-results';
 import { GenerationResponse } from '@/types/case-study';
-import { CheckCircle2, ShieldCheck, Terminal, ChevronDown, ChevronUp, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { POPULAR_CASE_STUDIES } from '@/lib/presets/popular-cases';
+import { 
+  CheckCircle2, ShieldCheck, Terminal, ChevronDown, ChevronUp, 
+  SlidersHorizontal, Sparkles, BookMarked, ArrowRight, Zap 
+} from 'lucide-react';
 
 export default function HomePage() {
   const [activeResponse, setActiveResponse] = useState<GenerationResponse | null>(null);
@@ -39,6 +43,10 @@ export default function HomePage() {
         resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 150);
+  };
+
+  const handleSelectPreset = (presetData: GenerationResponse) => {
+    handleSuccess(presetData);
   };
 
   const handleScrollToForm = () => {
@@ -80,13 +88,74 @@ export default function HomePage() {
             <ShieldCheck size={14} /> Jaminan Tanpa Sintaks Asing (No Postgres/T-SQL)
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--text-xs)', background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 'var(--radius-pill)' }}>
-            <Terminal size={14} /> Jawaban & Penjelasan Tersembunyi
+            <Terminal size={14} /> Interactive SQL Playground & Timer Interview
           </div>
         </div>
       </section>
 
+      {/* Popular Presets Showcase (Instant Ready-to-Use Cases) */}
+      <div className="no-print" style={{ background: 'var(--color-surface-sunken)', padding: 'var(--space-5)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div>
+            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookMarked size={18} color="var(--color-primary)" />
+              Atau Pilih Studi Kasus Populer Siap Pakai (Buka Instan)
+            </h3>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)', margin: '4px 0 0 0' }}>
+              Kasus industri teruji yang siap dikerjakan langsung tanpa perlu menunggu proses generasi AI.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+          {POPULAR_CASE_STUDIES.map((preset) => (
+            <div
+              key={preset.id}
+              style={{
+                background: 'var(--color-surface-raised)',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--color-border)',
+                padding: 'var(--space-4)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                  <span className="preview-tag preview-tag--primary" style={{ fontSize: '10px' }}>
+                    {preset.role}
+                  </span>
+                  <span className="preview-badge preview-badge--neutral" style={{ fontSize: '10px' }}>
+                    {preset.industry}
+                  </span>
+                </div>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-text)', marginBottom: 'var(--space-2)', lineHeight: 1.4 }}>
+                  {preset.title}
+                </h4>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)', lineHeight: 1.5, marginBottom: 'var(--space-3)' }}>
+                  {preset.description}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset(preset.data)}
+                className="preview-button preview-button--secondary"
+                style={{ width: '100%', fontSize: 'var(--text-xs)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+              >
+                <Zap size={14} color="var(--color-accent)" />
+                Buka Studi Kasus Ini
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Generator Form Section */}
-      <div ref={formRef} id="generator-form-section">
+      <div ref={formRef} id="generator-form-section" className="no-print">
         {activeResponse && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
             <button
@@ -96,7 +165,7 @@ export default function HomePage() {
               style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', fontWeight: 600 }}
             >
               <SlidersHorizontal size={16} />
-              {showForm ? 'Sembunyikan Pengaturan Form' : 'Buka Pengaturan Form untuk Generate Ulang'}
+              {showForm ? 'Sembunyikan Pengaturan Form' : 'Buka Pengaturan Form untuk Generate Kustom Baru'}
               {showForm ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
 
@@ -115,7 +184,7 @@ export default function HomePage() {
       <div ref={resultsRef} id="hasil-studi-kasus">
         {activeResponse && (
           <div style={{ borderTop: '2px dashed var(--color-border)', paddingTop: 'var(--space-6)', marginTop: 'var(--space-4)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                 <span className="preview-tag preview-tag--primary" style={{ fontSize: 'var(--text-xs)', padding: '4px 8px' }}>
                   <Sparkles size={13} style={{ marginRight: '4px', verticalAlign: 'middle' }} />

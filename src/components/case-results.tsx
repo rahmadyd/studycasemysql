@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CaseStudy, ValidationSummary } from '@/types/case-study';
 import { AnswerPanel } from './answer-panel';
+import { ErdDiagram } from './erd-diagram';
 import { 
-  ArrowLeft, ArrowUp, RotateCcw, Copy, Download, Check, Database, Award, 
-  FileText, CheckCircle2, AlertCircle, ShieldAlert, BookOpen, Layers
+  ArrowUp, RotateCcw, Copy, Download, Check, Database, 
+  CheckCircle2, AlertCircle, ShieldAlert, BookOpen, Layers,
+  Printer, Timer, Play, Pause, Award
 } from 'lucide-react';
 
 interface CaseResultsProps {
@@ -21,6 +23,41 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedReadme, setCopiedReadme] = useState(false);
   const [activeTab, setActiveTab] = useState<'soal' | 'skema' | 'portfolio'>('soal');
+
+  // Technical Interview Simulation State
+  const [interviewActive, setInterviewActive] = useState(false);
+  const [interviewSubmitted, setInterviewSubmitted] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState(30 * 60); // 30 mins
+  const [markedDoneTasks, setMarkedDoneTasks] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    let timer: any;
+    if (interviewActive && !interviewSubmitted && secondsRemaining > 0) {
+      timer = setInterval(() => {
+        setSecondsRemaining((prev) => {
+          if (prev <= 1) {
+            setInterviewSubmitted(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [interviewActive, interviewSubmitted, secondsRemaining]);
+
+  const formatTimer = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleToggleMarkDone = (taskNum: number) => {
+    setMarkedDoneTasks((prev) => ({
+      ...prev,
+      [taskNum]: !prev[taskNum],
+    }));
+  };
 
   const handleCopyJson = () => {
     navigator.clipboard.writeText(JSON.stringify(caseStudy, null, 2));
@@ -54,6 +91,10 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
     URL.revokeObjectURL(url);
   };
 
+  const handlePrintPdf = () => {
+    window.print();
+  };
+
   const handleCopyReadme = () => {
     if (caseStudy.portfolio?.readmeTemplate) {
       navigator.clipboard.writeText(caseStudy.portfolio.readmeTemplate);
@@ -64,11 +105,12 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
 
   const isExecutionVerified = validation.execution === 'verified';
   const isExecutionNotTested = validation.execution === 'not_tested';
+  const solvedCount = Object.values(markedDoneTasks).filter(Boolean).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      {/* Top Action Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+      {/* Top Action Bar (Hidden in Print) */}
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button
             type="button"
@@ -95,6 +137,17 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handlePrintPdf}
+            className="preview-button preview-button--secondary"
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
+            title="Cetak atau simpan sebagai dokumen PDF"
+          >
+            <Printer size={16} />
+            Cetak / Simpan PDF
+          </button>
+
           <button
             type="button"
             onClick={handleCopyJson}
@@ -127,6 +180,82 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
         </div>
       </div>
 
+      {/* Technical Interview Simulation Bar (Hidden in Print) */}
+      <div 
+        className="preview-card no-print" 
+        style={{ 
+          background: interviewActive ? 'color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-raised))' : 'var(--color-surface-raised)',
+          borderLeft: `4px solid ${interviewActive ? 'var(--color-accent)' : 'var(--color-border)'}`
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--color-surface-sunken)', display: 'grid', placeItems: 'center' }}>
+              <Timer size={20} color="var(--color-accent)" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
+                Simulasi Wawancara Teknis SQL (Interview Practice)
+              </div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)' }}>
+                {interviewActive
+                  ? (interviewSubmitted
+                      ? `Wawancara Selesai! Skor Anda: ${solvedCount} dari ${caseStudy.tasks.length} tugas terselesaikan.`
+                      : `Jawaban dikunci. Kerjakan semua tugas sebelum batas waktu berakhir.`)
+                  : 'Aktifkan mode wawancara berbatas waktu 30 menit untuk menguji kecepatan & akurasi SQL Anda.'}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            {interviewActive && !interviewSubmitted && (
+              <div style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: 'var(--text-lg)', color: secondsRemaining < 300 ? 'var(--color-danger)' : 'var(--color-accent)' }}>
+                ⏱️ {formatTimer(secondsRemaining)}
+              </div>
+            )}
+
+            {!interviewActive ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setInterviewActive(true);
+                  setInterviewSubmitted(false);
+                  setSecondsRemaining(30 * 60);
+                  setMarkedDoneTasks({});
+                }}
+                className="preview-button preview-button--secondary"
+                style={{ fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Play size={14} />
+                Mulai Simulasi 30 Menit
+              </button>
+            ) : !interviewSubmitted ? (
+              <button
+                type="button"
+                onClick={() => setInterviewSubmitted(true)}
+                className="preview-button preview-button--primary"
+                style={{ fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <CheckCircle2 size={14} />
+                Kumpulkan & Buka Kunci Jawaban
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setInterviewActive(false);
+                  setInterviewSubmitted(false);
+                }}
+                className="preview-button preview-button--secondary"
+                style={{ fontSize: 'var(--text-xs)' }}
+              >
+                Keluar Mode Interview
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Header Info Card */}
       <div className="preview-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
@@ -142,7 +271,7 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
             </h1>
           </div>
 
-          <div>
+          <div className="no-print">
             {isExecutionVerified ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(21, 128, 61, 0.1)', color: 'var(--color-success)', padding: '6px 12px', borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-sm)', fontWeight: 600 }}>
                 <CheckCircle2 size={16} />
@@ -191,8 +320,8 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
         )}
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="preview-nav" style={{ padding: 0, background: 'transparent' }}>
+      {/* Navigation Tabs (Hidden in Print) */}
+      <div className="preview-nav no-print" style={{ padding: 0, background: 'transparent' }}>
         <button
           type="button"
           onClick={() => setActiveTab('soal')}
@@ -207,7 +336,7 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
           className={`preview-nav__link ${activeTab === 'skema' ? 'preview-nav__link--active' : ''}`}
           style={{ cursor: 'pointer', border: 'none', background: 'none' }}
         >
-          Skema Tabel & Setup SQL ({caseStudy.tables.length} tabel)
+          Skema Tabel, ERD & Setup SQL ({caseStudy.tables.length} tabel)
         </button>
         {caseStudy.level === 'portfolio' && caseStudy.portfolio && (
           <button
@@ -222,20 +351,29 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
       </div>
 
       {/* TAB CONTENT: SOAL LATIHAN */}
-      {activeTab === 'soal' && (
-        <div>
+      {(activeTab === 'soal' || typeof window === 'undefined') && (
+        <div className="tab-pane-soal">
           <div style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700 }}>
               Tugas & Soal Praktik ({caseStudy.tasks.length} Soal)
             </h2>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)' }}>
-              Klik tombol pada setiap tugas untuk membuka solusi dan hasil luaran
+            <span className="no-print" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)' }}>
+              {interviewActive && !interviewSubmitted
+                ? 'Mode interview aktif. Kerjakan soal dan uji di playground sebelum membuka kunci jawaban.'
+                : 'Uji jawaban di SQL Playground atau klik lihat jawaban untuk mempelajari solusi resmi.'}
             </span>
           </div>
 
           <div>
             {caseStudy.tasks.map((task) => (
-              <AnswerPanel key={task.taskNumber} task={task} />
+              <AnswerPanel 
+                key={task.taskNumber} 
+                task={task} 
+                interviewMode={interviewActive}
+                interviewSubmitted={interviewSubmitted}
+                isMarkedDone={Boolean(markedDoneTasks[task.taskNumber])}
+                onToggleMarkDone={() => handleToggleMarkDone(task.taskNumber)}
+              />
             ))}
           </div>
 
@@ -256,9 +394,12 @@ export function CaseResults({ caseStudy, validation, provider, onBack, onReset }
         </div>
       )}
 
-      {/* TAB CONTENT: SKEMA TABEL & SETUP SQL */}
+      {/* TAB CONTENT: SKEMA TABEL, ERD & SETUP SQL */}
       {activeTab === 'skema' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          {/* Visual ERD Diagram */}
+          <ErdDiagram tables={caseStudy.tables} />
+
           {/* Tables Definition */}
           {caseStudy.tables.map((table, tIdx) => (
             <div key={tIdx} className="preview-card">
