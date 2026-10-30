@@ -24,23 +24,21 @@ export default function RootLayout({
         <div className="preview-root">
           {/* Header */}
           <header className="preview-header">
-            <div className="preview-header__brand">
-              <div className="preview-header__logo">
-                <Database size={16} />
-              </div>
+            <Link href="/" className="preview-header__brand" style={{ textDecoration: 'none' }}>
+              <img src="/icon.svg" alt="MySQL Case Studio" style={{ width: 32, height: 32, borderRadius: 8 }} />
               <div>
                 <span style={{ fontWeight: 700 }}>MySQL Case Studio</span>
                 <span style={{ fontSize: '11px', color: 'var(--color-muted)', marginLeft: '8px' }}>
                   DBA · Data Engineer · Data Analyst
                 </span>
               </div>
-            </div>
+            </Link>
             <nav className="preview-header__actions">
-              <Link href="/" className="preview-header__action" style={{ fontWeight: 600 }}>
+              <Link href="/#generator-form-section" className="preview-header__action" style={{ fontWeight: 600 }}>
                 Generator
               </Link>
-              <Link href="/hasil" className="preview-header__action">
-                Studi Kasus
+              <Link href="/#hasil-studi-kasus" className="preview-header__action">
+                Hasil Studi Kasus
               </Link>
               <span className="preview-tag preview-tag--neutral" style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <ShieldCheck size={12} color="var(--color-primary)" />

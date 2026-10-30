@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { CaseStudy, ValidationSummary } from '@/types/case-study';
 import { AnswerPanel } from './answer-panel';
 import { 
-  ArrowLeft, Copy, Download, Check, Database, Award, 
+  ArrowLeft, ArrowUp, RotateCcw, Copy, Download, Check, Database, Award, 
   FileText, CheckCircle2, AlertCircle, ShieldAlert, BookOpen, Layers
 } from 'lucide-react';
 
@@ -13,9 +13,10 @@ interface CaseResultsProps {
   validation: ValidationSummary;
   provider: string;
   onBack: () => void;
+  onReset?: () => void;
 }
 
-export function CaseResults({ caseStudy, validation, provider, onBack }: CaseResultsProps) {
+export function CaseResults({ caseStudy, validation, provider, onBack, onReset }: CaseResultsProps) {
   const [copiedJson, setCopiedJson] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedReadme, setCopiedReadme] = useState(false);
@@ -68,15 +69,30 @@ export function CaseResults({ caseStudy, validation, provider, onBack }: CaseRes
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Top Action Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-        <button
-          type="button"
-          onClick={onBack}
-          className="preview-button preview-button--secondary"
-          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
-        >
-          <ArrowLeft size={16} />
-          Kembali ke Form Generator
-        </button>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <button
+            type="button"
+            onClick={onBack}
+            className="preview-button preview-button--secondary"
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}
+          >
+            <ArrowUp size={16} />
+            Ubah Pengaturan Form
+          </button>
+
+          {onReset && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="preview-button preview-button--ghost"
+              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--color-muted)' }}
+              title="Bersihkan hasil dan mulai baru"
+            >
+              <RotateCcw size={15} />
+              Reset
+            </button>
+          )}
+        </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           <button

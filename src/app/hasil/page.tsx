@@ -63,7 +63,11 @@ export default function HasilPage() {
       caseStudy={data.caseStudy}
       validation={data.validation}
       provider={data.provider}
-      onBack={() => router.push('/')}
+      onBack={() => router.push('/#generator-form-section')}
+      onReset={() => {
+        sessionStorage.removeItem('current_case_study');
+        router.push('/');
+      }}
     />
   );
 }
