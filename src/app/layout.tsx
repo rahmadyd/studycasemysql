@@ -6,6 +6,11 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Generator Studi Kasus MySQL | DBA, DE & DA',
   description: 'Aplikasi generator latihan studi kasus MySQL realistis berbasis industri Indonesia untuk Database Administrator, Data Engineer, dan Data Analyst.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
